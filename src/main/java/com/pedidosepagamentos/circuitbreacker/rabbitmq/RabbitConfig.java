@@ -1,4 +1,4 @@
-package com.pedidosepagamentos.circuitbreacker.config;
+package com.pedidosepagamentos.circuitbreacker.rabbitmq;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;

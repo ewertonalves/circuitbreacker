@@ -5,12 +5,12 @@ import java.util.List;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
-import com.pedidosepagamentos.circuitbreacker.PagamentoFeignClient.PagamentoClient;
-import com.pedidosepagamentos.circuitbreacker.config.RabbitConfig;
 import com.pedidosepagamentos.circuitbreacker.enums.StatusEnum;
 import com.pedidosepagamentos.circuitbreacker.model.Pedido;
 import com.pedidosepagamentos.circuitbreacker.model.request.PagamentoRequest;
 import com.pedidosepagamentos.circuitbreacker.model.response.PagamentoResponse;
+import com.pedidosepagamentos.circuitbreacker.pagamentoFeignClient.PagamentoClient;
+import com.pedidosepagamentos.circuitbreacker.rabbitmq.RabbitConfig;
 import com.pedidosepagamentos.circuitbreacker.repository.PedidoRepository;
 
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
@@ -23,6 +23,7 @@ public class PedidoService {
 	private final PagamentoClient pagamentoClient;
 	private final RabbitTemplate rabbitTemplate;
 
+	
 	public PedidoService(PedidoRepository repository, PagamentoClient pagamentoClient, RabbitTemplate rabbitTemplate) {
 		this.repository  	 = repository;
 		this.pagamentoClient = pagamentoClient;
@@ -40,7 +41,8 @@ public class PedidoService {
 		PagamentoResponse pagamentoResponse = pagamentoClient.processarPagamento(pagamentoRequest);
 		
 		pedidoCriado.setStatus(pagamentoResponse.isSucesso() ? StatusEnum.PAGO : StatusEnum.CANCELADO);
-	    rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE_NAME, RabbitConfig.ROUTING_KEY, pedidoCriado);
+	    
+		rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE_NAME, RabbitConfig.ROUTING_KEY, pedidoCriado);
 
 		return repository.save(pedidoCriado);
 	}
